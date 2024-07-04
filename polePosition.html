@@ -25,16 +25,25 @@ var ctx = canvas.getContext("2d");
 canvas.width = 256;  //Pole Position Resolution
 canvas.height = 224;
 canvas.style.width = ""+ window.innerWidth +"px";   // stretch canvas to fit screen
-canvas.style.height = ""+ window.innerHeight +"px";
+canvas.style.height = ""+ window.innerHeight +"px"; // ***TODO: maybe stretch canvas to always have correct ratio as game instead of fullscreen
 ctx.imageSmoothingEnabled = false;
 
-ctx.fillRect(0, 0, canvas.width, canvas.height);
+//=================Sprites==============================
+var background = new Image();
+    background.src = "sprites/Pole0000.png";
+//======================================================
+
+// ctx.fillRect(0, 0, canvas.width, canvas.height);
+var tmp = 0;
 function test() {
-    drawColorText(ctx, "ITS DANGEROUS TO GO", "#FF00FF", 0, 0);
+    tmp++;
+ctx.drawImage(background, canvas.width/2 - tmp/2, canvas.height/2 - tmp/2, tmp, tmp);
+
+    drawColorText(ctx, "LO", "#FFFFFF", canvas.width - 32, canvas.height - 16);
 
 }
 
-setInterval(test, 500);
+setInterval(test, 10);
 
 
 window.addEventListener("keydown", function (event) {

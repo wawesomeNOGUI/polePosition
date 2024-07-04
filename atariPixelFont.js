@@ -8,7 +8,7 @@ var tempCtx = tempCanvas.getContext("2d");
 tempCanvas.width = 16;
 tempCanvas.height = 16;
 
-function drawText(myContext, string, x, y, spacing = 16, scaleX = 16, scaleY = 16){
+function drawText(myContext, string, x, y, spacing = 8, scaleX = 8, scaleY = 8){
   for(var i = 0; i<string.length; i++){
     if(string[i] == " "){
       myContext.fillStyle = "#00000000"; //Transparent
@@ -19,7 +19,7 @@ function drawText(myContext, string, x, y, spacing = 16, scaleX = 16, scaleY = 1
   }
 }
 
-function drawColorText(myContext, string, color, x, y, spacing = 16, scaleX = 16, scaleY = 16){
+function drawColorText(myContext, string, color, x, y, spacing = 8, scaleX = 8, scaleY = 8){
   tempCanvas.width = string.length*(spacing);
   tempCanvas.height = scaleY;
 

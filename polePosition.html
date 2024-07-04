@@ -31,6 +31,9 @@ ctx.imageSmoothingEnabled = false;
 //=================Sprites==============================
 var background = new Image();
     background.src = "sprites/Pole0000.png";
+
+var carSprite = new Image();
+    carSprite.src = "sprites/car.png";
 //======================================================
 
 //======================Vars============================
@@ -62,8 +65,11 @@ function render() {
     // default background
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    tmp++;
-    ctx.drawImage(background, canvas.width/2 - tmp/2, canvas.height/2 - tmp/2, tmp, tmp);
+
+    // ctx.drawImage(background, 0, 0);
+
+    // car
+    ctx.drawImage(carSprite, canvas.width/2 - carSprite.width/2 - 2, canvas.height - carSprite.height - 12);
 
 
     // Screen Text

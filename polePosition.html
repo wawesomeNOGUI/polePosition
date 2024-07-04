@@ -34,6 +34,12 @@ var background = new Image();
 
 var carSprite = new Image();
     carSprite.src = "sprites/car.png";
+
+var roadBase = new Image();
+    roadBase.src = "sprites/roadBase.png";
+
+var roadSection = new Image();
+    roadSection.src = "sprites/roadSection.png";
 //======================================================
 
 //======================Vars============================
@@ -56,8 +62,11 @@ function timing() {
         secs++;
         playTime--;
     }
+    pu -= 0.001;
 }
 setInterval(timing, 10);
+
+var pu = 0.9;
 
 // ctx.fillRect(0, 0, canvas.width, canvas.height);
 var tmp = 0;
@@ -68,9 +77,13 @@ function render() {
 
     // ctx.drawImage(background, 0, 0);
 
+    // road
+    ctx.drawImage(roadBase, 0, canvas.height - roadBase.height);
+    ctx.drawImage(roadSection, (roadSection.width - (roadSection.width*pu)) / 2, canvas.height - roadBase.height - roadSection.height*pu, roadSection.width*pu, roadSection.height*pu);
+    // ctx.drawImage(roadSection, 13, canvas.height - roadBase.height - roadSection.height*pu, roadSection.width*pu, roadSection.height*pu);
+
     // car
     ctx.drawImage(carSprite, canvas.width/2 - carSprite.width/2 - 2, canvas.height - carSprite.height - 12);
-
 
     // Screen Text
     // gear

@@ -1,0 +1,54 @@
+<html>
+<body style="margin: 0; padding: 0; overflow: hidden;">
+    <style>
+        #gameCanvas {
+            margin: 0;
+            padding: 0;
+
+            /*border-style: solid;*/
+            /*border-color: #A4FCD4;*/
+            /*border-width: 20px;*/
+
+            font-smooth: never;
+            -webkit-font-smoothing : none;
+
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
+<canvas id="gameCanvas"></canvas>
+
+<script src="./atariPixelFont.js"></script>
+<script>
+var canvas = document.getElementById("gameCanvas");
+var ctx = canvas.getContext("2d");
+canvas.width = 256;  //Pole Position Resolution
+canvas.height = 224;
+canvas.style.width = ""+ window.innerWidth +"px";   // stretch canvas to fit screen
+canvas.style.height = ""+ window.innerHeight +"px";
+ctx.imageSmoothingEnabled = false;
+
+ctx.fillRect(0, 0, canvas.width, canvas.height);
+function test() {
+    drawColorText(ctx, "ITS DANGEROUS TO GO", "#FF00FF", 0, 0);
+
+}
+
+setInterval(test, 500);
+
+
+window.addEventListener("keydown", function (event) {
+
+});
+
+window.addEventListener("resize", function(e){
+    canvas.style.width = ""+ window.innerWidth +"px";
+    canvas.style.height = ""+ window.innerHeight +"px";
+});
+
+window.addEventListener("contextmenu", function(e){
+  e.preventDefault();   //stops right click bringing up a menu
+});
+</script>
+</body>
+</html>

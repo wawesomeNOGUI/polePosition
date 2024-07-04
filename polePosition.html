@@ -35,14 +35,34 @@ var background = new Image();
 
 //======================Vars============================
 var topScore = 1600;
-var time = 0;
+var score = 0;
+var playTime = 60;
+var speed = 195;
+
+// lap time
+var centisecs = 0;
+var secs = 0;
+
 //======================================================
+
+function timing() {
+    centisecs++;
+
+    if (centisecs == 99) {
+        centisecs = 0;
+        secs++;
+        playTime--;
+    }
+}
+setInterval(timing, 10);
 
 // ctx.fillRect(0, 0, canvas.width, canvas.height);
 var tmp = 0;
 function render() {
+    // default background
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     tmp++;
-    time++;
     ctx.drawImage(background, canvas.width/2 - tmp/2, canvas.height/2 - tmp/2, tmp, tmp);
 
 
@@ -51,16 +71,25 @@ function render() {
     drawColorText(ctx, "LO", "#FFFFFF", canvas.width - 16, canvas.height - 8);
 
     // score
-    drawColorText(ctx, "TOP", "#ff8fae", 8, 8);
-    drawColorText(ctx, "" + topScore, "#ff8fae", 40, 8);
+    drawColorText(ctx, "TOP", "#ff8fae", 24, 8);
+    drawColorText(ctx, "" + topScore, "#ff8fae", 56, 8);
+    drawColorText(ctx, "SCORE", "#ffffff", 8, 24);
+    drawColorText(ctx, "" + score, "#ffffff", 56, 24);
 
-    // time
+    // play time left
     drawColorText(ctx, "TIME", "#ffff70", 112, 8);
-    drawColorText(ctx, "" + time, "#ffff70", 112, 24);
+    drawColorText(ctx, "" + playTime, "#ffff70", 120, 24);
 
+    // lap time
+    drawColorText(ctx, "LAP", "#8fff70", 176, 8);
+    drawColorText(ctx, "" + secs + "*" + centisecs, "#8fff70", 208, 8);
+
+    // speed
+    drawColorText(ctx, "SPEED", "#ffffff", 160, 24);
+    drawColorText(ctx, "" + speed + "kmh", "#ffffff", 208, 24);
 }
+setInterval(render, 16);
 
-setInterval(render, 10);
 
 
 window.addEventListener("keydown", function (event) {

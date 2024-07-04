@@ -1,5 +1,5 @@
 <html>
-<body style="margin: 0; padding: 0; overflow: hidden;">
+<body style="margin: 0; padding: 0; overflow: hidden; background-color: black;">
     <style>
         #gameCanvas {
             margin: 0;
@@ -33,17 +33,34 @@ var background = new Image();
     background.src = "sprites/Pole0000.png";
 //======================================================
 
+//======================Vars============================
+var topScore = 1600;
+var time = 0;
+//======================================================
+
 // ctx.fillRect(0, 0, canvas.width, canvas.height);
 var tmp = 0;
-function test() {
+function render() {
     tmp++;
-ctx.drawImage(background, canvas.width/2 - tmp/2, canvas.height/2 - tmp/2, tmp, tmp);
+    time++;
+    ctx.drawImage(background, canvas.width/2 - tmp/2, canvas.height/2 - tmp/2, tmp, tmp);
 
-    drawColorText(ctx, "LO", "#FFFFFF", canvas.width - 32, canvas.height - 16);
+
+    // Screen Text
+    // gear
+    drawColorText(ctx, "LO", "#FFFFFF", canvas.width - 16, canvas.height - 8);
+
+    // score
+    drawColorText(ctx, "TOP", "#ff8fae", 8, 8);
+    drawColorText(ctx, "" + topScore, "#ff8fae", 40, 8);
+
+    // time
+    drawColorText(ctx, "TIME", "#ffff70", 112, 8);
+    drawColorText(ctx, "" + time, "#ffff70", 112, 24);
 
 }
 
-setInterval(test, 10);
+setInterval(render, 10);
 
 
 window.addEventListener("keydown", function (event) {

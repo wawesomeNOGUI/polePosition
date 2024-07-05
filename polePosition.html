@@ -57,10 +57,11 @@ var centisecs = 0;
 var secs = 0;
 
 // road drawing variables
-const NUM_ROAD_SECTIONS = 10;
+const NUM_ROAD_SECTIONS = 11;
 const MAGIC_SCALE_NUM = 1.74;
-const INITIAL_PU = 1.55;
-const INITIAL_ROAD_HEIGHT_OFFSET = -15;
+// const INITIAL_PU = 1.55;
+const INITIAL_PU = 2.697;
+const INITIAL_ROAD_HEIGHT_OFFSET = 87;
 var pu = INITIAL_PU;
 var roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
 var xTrans = 0;
@@ -91,15 +92,11 @@ function render() {
     // ctx.fillStyle = "#FF0000";
     // ctx.fillRect(0, canvas.height - 51, 50, 1);
     // ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
+    // ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
 
     // road
     // translate road based on key presses (or based on track map?? key presses from player will undo translate to keep car in center of track)
     ctx.translate(xTrans, yTrans);
-
-    // road base
-    ctx.fillStyle = "#515151";
-    ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
-    ctx.fillRect(canvas.width/2 - 1, canvas.height - 117, 2, 1);
     
     // moving road sections (draw frontmost first to furthest away)
     for (var i = 0; i < NUM_ROAD_SECTIONS; i++) {
@@ -114,7 +111,8 @@ function render() {
     }
 
     // // reset road vars
-    if (pu > 2.686) { // 6.859
+    // if (pu > 2.686) { // 6.859
+    if (pu >= INITIAL_PU * MAGIC_SCALE_NUM) {
         pu = INITIAL_PU;
         roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
     }

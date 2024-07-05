@@ -46,19 +46,19 @@ var roadSection = new Image();
 var topScore = 1600;
 var score = 0;
 var playTime = 60;
-var speed = 60;
+var speed = 1000;
 
 // lap time
 var centisecs = 0;
 var secs = 0;
 
 // road drawing variables
-var pu = 0.45;
-var pu2 = 0.20;
-var pu3 = 1;
-var pu4 = 0.1;
-var pu5 = 0.045;
-var roadHeightOffset = 0;
+const NUM_ROAD_SECTIONS = 10;
+const MAGIC_SCALE_NUM = 1.74;
+const INITIAL_PU = 1.55;
+const INITIAL_ROAD_HEIGHT_OFFSET = -15;
+var pu = INITIAL_PU;
+var roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
 
 //======================================================
 
@@ -71,11 +71,11 @@ function timing() {
         playTime--;
     }
     pu += 0.001 * speed/10;
-    pu2 += 0.00045 * speed/10;
-    pu3 += 0.0023 * speed/10;
-    pu4 += 0.00022 * speed/10;
-    pu5 += 0.00011 * speed/10;
-    roadHeightOffset += 0.1 * speed/10;
+    // pu2 += 0.00045 * speed/10;
+    // pu3 += 0.0023 * speed/10;
+    // pu4 += 0.00022 * speed/10;
+    // pu5 += 0.00011 * speed/10;
+    roadHeightOffset += 0.1 * speed/15.2;
 }
 setInterval(timing, 10);
 
@@ -89,26 +89,33 @@ function render() {
 
     // ctx.drawImage(background, 0, 0);
 
+    // markers for dev
+    // ctx.fillStyle = "#FF0000";
+    // ctx.fillRect(0, canvas.height - 51, 50, 1);
+    // ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
+
     // road
     // road base
     ctx.fillStyle = "#515151";
-    ctx.fillRect(0, canvas.height - 40, canvas.width, 40);
+    ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
+    ctx.fillRect(canvas.width/2 - 1, canvas.height - 117, 2, 1);
     
     // moving road sections (draw frontmost first to furthest away)
-    ctx.drawImage(roadSection, (roadSection.width - (roadSection.width*pu5)) / 2, canvas.height - roadBase.height - roadSection.height*pu - roadSection.height*pu2 - roadSection.height*pu4 - roadSection.height*pu5 + roadHeightOffset, roadSection.width*pu5, roadSection.height*pu5);
-    ctx.drawImage(roadSection, (roadSection.width - (roadSection.width*pu4)) / 2, canvas.height - roadBase.height - roadSection.height*pu - roadSection.height*pu2 - roadSection.height*pu4 + roadHeightOffset, roadSection.width*pu4, roadSection.height*pu4);
-    ctx.drawImage(roadSection, (roadSection.width - (roadSection.width*pu2)) / 2, canvas.height - roadBase.height - roadSection.height*pu - roadSection.height*pu2 + roadHeightOffset, roadSection.width*pu2, roadSection.height*pu2);
-    ctx.drawImage(roadSection, (roadSection.width - (roadSection.width*pu)) / 2, canvas.height - roadBase.height - roadSection.height*pu + roadHeightOffset, roadSection.width*pu, roadSection.height*pu);
-    ctx.drawImage(roadSection, (roadSection.width - (roadSection.width*pu3)) / 2, canvas.height - roadSection.height - 33 + roadHeightOffset, roadSection.width*pu3, roadSection.height*pu3);
+    for (var i = 0; i < NUM_ROAD_SECTIONS; i++) {
+        var thisScale = pu / (MAGIC_SCALE_NUM ** i); // repeated division by MAGIC_SCALE_NUM
+        var widthOffset = (roadSection.width - (roadSection.width * thisScale)) / 2;
+        var heightOffset = canvas.height + roadHeightOffset;
+        for (var j = 0; j <= i; j++) {
+            heightOffset -= roadSection.height * (pu / (MAGIC_SCALE_NUM ** j));
+        }
 
-    // reset road vars
-    if (roadHeightOffset > 70) {
-        pu = 0.45;
-        pu2 = 0.20;
-        pu3 = 1;
-        pu4 = 0.1;
-        pu5 = 0.045;
-        roadHeightOffset = 0;
+        ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
+    }
+
+    // // reset road vars
+    if (pu > 2.72) {
+        pu = INITIAL_PU;
+        roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
     }
 
     // ctx.drawImage(roadSection, 13, canvas.height - roadBase.height - roadSection.height*pu, roadSection.width*pu, roadSection.height*pu);

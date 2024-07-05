@@ -46,7 +46,11 @@ var roadSection = new Image();
 var topScore = 1600;
 var score = 0;
 var playTime = 60;
-var speed = 195;
+var speed = 0;
+var accel = 0.3;
+var deaccel = 0.5;
+var xVelocity = 0;
+var keysDown = {};
 
 // lap time
 var centisecs = 0;
@@ -59,6 +63,8 @@ const INITIAL_PU = 1.55;
 const INITIAL_ROAD_HEIGHT_OFFSET = -15;
 var pu = INITIAL_PU;
 var roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
+var xTrans = 0;
+var yTrans = 0;
 
 //======================================================
 
@@ -73,11 +79,7 @@ function timing() {
     pu += 0.001 * speed;
     roadHeightOffset += 0.1 * speed/1.52;
 }
-setInterval(timing, 10);
 
-
-// ctx.fillRect(0, 0, canvas.width, canvas.height);
-var tmp = 0;
 function render() {
     // default background
     ctx.fillStyle = "black";
@@ -91,6 +93,9 @@ function render() {
     // ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
 
     // road
+    // translate road based on key presses (or based on track map?? key presses from player will undo translate to keep car in center of track)
+    ctx.translate(xTrans, yTrans);
+
     // road base
     ctx.fillStyle = "#515151";
     ctx.fillRect(0, canvas.height - 20, canvas.width, 20);
@@ -113,6 +118,9 @@ function render() {
         pu = INITIAL_PU;
         roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
     }
+
+    // Reset current transformation matrix to the identity matrix after drawing road
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     // car
     ctx.drawImage(carSprite, canvas.width/2 - carSprite.width/2 - 2, canvas.height - carSprite.height - 12);
@@ -137,23 +145,60 @@ function render() {
 
     // speed
     drawColorText(ctx, "SPEED", "#ffffff", 160, 24);
-    drawColorText(ctx, "" + speed + "kmh", "#ffffff", 208, 24);
+    drawColorText(ctx, "" + Math.round(speed) + "kmh", "#ffffff", 208, 24);
 }
-setInterval(render, 16);
+
+function update() {
+    // gas
+    if (keysDown["ArrowUp"]) {
+        speed += accel;
+    } else {
+        speed -= deaccel;
+
+        if (speed < 0) {
+            speed = 0;
+        }
+    }
+
+    // turning
+    if (keysDown["ArrowLeft"]) {
+        xTrans -= accel;
+        // yTrans += accel;
+    } else if (keysDown["ArrowRight"]) {
+        xTrans += accel;
+        // yTrans -= accel;
+    }
+
+}
+
+function gameLoop() {
+    timing();
+    update();
+    render();
+}
+setInterval(gameLoop, 10);
 
 
 
-window.addEventListener("keydown", function (event) {
+window.addEventListener("keydown", function(e) {
+    keysDown[e.key] = true;
 
+    // if (e.key == "ArrowUp") {
+    //     xTrans--;
+    // }
 });
 
-window.addEventListener("resize", function(e){
+window.addEventListener("keyup", function(e) {
+    delete keysDown[e.key];
+});
+
+window.addEventListener("resize", function(e) {
     canvas.style.width = ""+ window.innerWidth +"px";
     canvas.style.height = ""+ window.innerHeight +"px";
 });
 
-window.addEventListener("contextmenu", function(e){
-  e.preventDefault();   //stops right click bringing up a menu
+window.addEventListener("contextmenu", function(e) {
+    e.preventDefault();   //stops right click bringing up a menu
 });
 </script>
 </body>

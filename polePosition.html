@@ -94,10 +94,7 @@ function render() {
     // ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
     // ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
 
-    // road
-    // translate road based on key presses (or based on track map?? key presses from player will undo translate to keep car in center of track)
-    ctx.translate(xTrans, yTrans);
-    
+    // road    
     // moving road sections (draw frontmost first to furthest away)
     for (var i = 0; i < NUM_ROAD_SECTIONS; i++) {
         var thisScale = pu / (MAGIC_SCALE_NUM ** i); // repeated division by MAGIC_SCALE_NUM
@@ -106,6 +103,10 @@ function render() {
         for (var j = 0; j <= i; j++) {
             heightOffset -= roadSection.height * (pu / (MAGIC_SCALE_NUM ** j));
         }
+
+        // translate road based on key presses (or based on track map?? key presses from player will undo translate to keep car in center of track)
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+        ctx.translate(xTrans * thisScale, yTrans * thisScale);
 
         ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
     }

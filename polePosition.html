@@ -40,13 +40,29 @@ var roadBase = new Image();
 
 var roadSection = new Image();
     roadSection.src = "sprites/roadSection.png";
+
+var roadSectionWhiteWhite = new Image();
+    roadSectionWhiteWhite.src = "sprites/roadSectionWhiteWhite.png";
+
+var roadSectionWhiteYellow = new Image();
+    roadSectionWhiteYellow.src = "sprites/roadSectionWhiteYellow.png";
+
+var roadSectionRedWhite = new Image();
+    roadSectionRedWhite.src = "sprites/roadSectionRedWhite.png";
+
+var roadSectionRedYellow = new Image();
+    roadSectionRedYellow.src = "sprites/roadSectionRedYellow.png";
 //======================================================
 
 //======================Vars============================
 var topScore = 1600;
 var score = 0;
 var playTime = 60;
+
+// car vars
+const MAX_SPEED = 195;
 var speed = 0;
+var turnSpeed = 2;
 var accel = 0.3;
 var deaccel = 0.5;
 var xVelocity = 0;
@@ -57,15 +73,43 @@ var centisecs = 0;
 var secs = 0;
 
 // road drawing variables
-const NUM_ROAD_SECTIONS = 11;
-const MAGIC_SCALE_NUM = 1.74;
+const NUM_ROAD_SECTIONS = 1; // 11;
+const MAGIC_SCALE_NUM = 1.03; //1.74;
 // const INITIAL_PU = 1.55;
 const INITIAL_PU = 2.697;
-const INITIAL_ROAD_HEIGHT_OFFSET = 62;
+const INITIAL_ROAD_HEIGHT_OFFSET = 0; // 62;
 var pu = INITIAL_PU;
 var roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
 var xTrans = 0;
 var yTrans = 0;
+
+// store order of sections to draw
+var roadSectionDrawCircularBuffer = [
+    roadSectionWhiteWhite,
+    roadSectionWhiteWhite,
+    roadSectionWhiteWhite,
+    roadSectionWhiteWhite,
+    roadSectionWhiteWhite,
+    roadSectionWhiteWhite,
+    roadSectionRedWhite,
+    roadSectionRedWhite,
+    roadSectionRedWhite,
+    roadSectionRedWhite,
+    roadSectionRedWhite,
+    roadSectionRedWhite,
+    roadSectionWhiteYellow,
+    roadSectionWhiteYellow,
+    roadSectionWhiteYellow,
+    roadSectionWhiteYellow,
+    roadSectionWhiteYellow,
+    roadSectionWhiteYellow,
+    roadSectionRedYellow,
+    roadSectionRedYellow,
+    roadSectionRedYellow,
+    roadSectionRedYellow,
+    roadSectionRedYellow,
+    roadSectionRedYellow,
+];
 
 //======================================================
 
@@ -77,8 +121,8 @@ function timing() {
         secs++;
         playTime--;
     }
-    pu += 0.001 * speed;
-    roadHeightOffset += 0.1 * speed/1.52;
+    pu += 0.001 * speed * 5;
+    roadHeightOffset += 0.1 * speed/2.9 * 5;
 }
 
 function render() {
@@ -89,14 +133,15 @@ function render() {
     // ctx.drawImage(background, 0, 0);
 
     // markers for dev
-    // ctx.fillStyle = "#FF0000";
-    // ctx.fillRect(0, canvas.height - 51, 50, 1);
-    // ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
-    // ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
+    ctx.fillStyle = "#FF0000";
+    ctx.fillRect(0, canvas.height - 51, 50, 1);
+    ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
+    ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
 
-    // road    
-    // moving road sections (draw frontmost first to furthest away)
-    for (var i = 0; i < NUM_ROAD_SECTIONS; i++) {
+
+    for (var i = 0; i < 200; i++) {
+        var roadSection = roadSectionDrawCircularBuffer[i % roadSectionDrawCircularBuffer.length];
+
         var thisScale = pu / (MAGIC_SCALE_NUM ** i); // repeated division by MAGIC_SCALE_NUM
         var widthOffset = (roadSection.width - (roadSection.width * thisScale)) / 2;
         var heightOffset = canvas.height + roadHeightOffset;
@@ -111,9 +156,26 @@ function render() {
         ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
     }
 
+    // road    
+    // moving road sections (draw frontmost first to furthest away)
+    // for (var i = 0; i < NUM_ROAD_SECTIONS; i++) {
+    //     var thisScale = pu / (MAGIC_SCALE_NUM ** i); // repeated division by MAGIC_SCALE_NUM
+    //     var widthOffset = (roadSection.width - (roadSection.width * thisScale)) / 2;
+    //     var heightOffset = canvas.height + roadHeightOffset;
+    //     for (var j = 0; j <= i; j++) {
+    //         heightOffset -= roadSection.height * (pu / (MAGIC_SCALE_NUM ** j));
+    //     }
+
+    //     // translate road based on key presses (or based on track map?? key presses from player will undo translate to keep car in center of track)
+    //     ctx.setTransform(1, 0, 0, 1, 0, 0);
+    //     ctx.translate(xTrans * thisScale, yTrans * thisScale);
+
+    //     ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
+    // }
+
     // // reset road vars
     // if (pu > 2.686) { // 6.859
-    if (pu >= INITIAL_PU * MAGIC_SCALE_NUM) {
+    if (pu >= INITIAL_PU * MAGIC_SCALE_NUM * 2) {
         pu = INITIAL_PU;
         roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
     }
@@ -148,6 +210,10 @@ function render() {
 }
 
 function update() {
+    if (speed >= MAX_SPEED) {
+        speed = MAX_SPEED;
+    }
+
     // gas
     if (keysDown["ArrowUp"]) {
         speed += accel;
@@ -161,10 +227,10 @@ function update() {
 
     // turning
     if (keysDown["ArrowLeft"]) {
-        xTrans -= accel;
-        // yTrans += accel;
+        xTrans += turnSpeed * speed/35;
+        // yTrans += turnSpeed;
     } else if (keysDown["ArrowRight"]) {
-        xTrans += accel;
+        xTrans -= turnSpeed * speed/35;
         // yTrans -= accel;
     }
 

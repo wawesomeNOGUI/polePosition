@@ -168,7 +168,6 @@ function render() {
     ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
 
     // var
-
     var tmpMapIndex = currentMapSectionIndex;
     for (var i = 0; i < 500; i++) {
         if (tmpMapIndex == currentMapSectionIndex) {
@@ -192,7 +191,7 @@ function render() {
 
         // translate road based on key presses and track map, (key presses from player will counteract map translate to keep car in center of track)
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.translate(xTrans * (thisCurve - thisScale) + thisCurve * (1 - thisScale) * i, 0);
+        ctx.translate(xTrans * (thisCurve - thisScale) + thisCurve * (1 - thisScale) * (i % 180), 0);
 
         ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
     }
@@ -285,6 +284,13 @@ function update() {
     if (carPos > map[currentMapSectionIndex]["to"]) {
         currentMapSectionIndex++;
         currentMapSectionIndex = currentMapSectionIndex % map.length;
+
+        // // reset road vars
+        // if (pu > 2.686) { // 6.859
+        // if (pu >= INITIAL_PU * MAGIC_SCALE_NUM * 2) {
+                pu = INITIAL_PU;
+                roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
+        // }
 
         // completed a lap
         if (currentMapSectionIndex == 0) {

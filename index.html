@@ -67,6 +67,7 @@ var accel = 0.3;
 var deaccel = 0.5;
 var xVelocity = 0;
 var keysDown = {};
+var carPos = 0;
 
 // lap time
 var centisecs = 0;
@@ -75,6 +76,7 @@ var secs = 0;
 // road drawing variables
 const NUM_ROAD_SECTIONS = 1; // 11;
 const MAGIC_SCALE_NUM = 1.03; //1.74;
+const SCANLINE_TO_KM_RATIO = 180 / 0.1;
 // const INITIAL_PU = 1.55;
 const INITIAL_PU = 2.697;
 const INITIAL_ROAD_HEIGHT_OFFSET = 0; // 62;
@@ -111,8 +113,34 @@ var roadSectionDrawCircularBuffer = [
     roadSectionRedYellow,
 ];
 
-//======================================================
+// update this index after player passes a certain section
+var currentMapSectionIndex = 0;
 
+// map road section format
+// {
+//     "curvature" : "num",
+//     "from"        : "pos1",
+//     "to"          : "pos2",
+// }
+// (position is in kilometers)
+var map = [
+    {
+        "curvature" : 0,
+        "scanlines" : 180,
+        "from"      : 0,
+        "to"        : 0.1,
+    },
+    {
+        "curvature" : 0.5,
+        "scanlines" : 180,
+        "from"      : 0.1,
+        "to"        : 0.2,
+    },
+]
+
+//======================================================
+var lastTimeSecs = Date.now() / 1000;
+var deltaTimeSecs = 0;
 function timing() {
     centisecs++;
 
@@ -121,6 +149,9 @@ function timing() {
         secs++;
         playTime--;
     }
+
+    deltaTimeSecs = Date.now() / 1000 - lastTimeSecs;
+    lastTimeSecs = Date.now() / 1000;
 }
 
 function render() {
@@ -136,9 +167,20 @@ function render() {
     ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
     ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
 
-    var thisCurve = playTime / 5;
+    // var
 
-    for (var i = 0; i < 200; i++) {
+    var tmpMapIndex = currentMapSectionIndex;
+    for (var i = 0; i < 500; i++) {
+        if (tmpMapIndex == currentMapSectionIndex) {
+            if (i > map[tmpMapIndex].scanlines) {
+                tmpMapIndex++;
+
+                tmpMapIndex = tmpMapIndex % map.length
+            }
+        }
+
+        var thisCurve = map[tmpMapIndex]["curvature"];
+        
         var roadSection = roadSectionDrawCircularBuffer[i % roadSectionDrawCircularBuffer.length];
 
         var thisScale = pu / (MAGIC_SCALE_NUM ** i); // repeated division by MAGIC_SCALE_NUM
@@ -150,7 +192,7 @@ function render() {
 
         // translate road based on key presses and track map, (key presses from player will counteract map translate to keep car in center of track)
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.translate(xTrans * thisScale + thisCurve * (1 - thisScale) * i, 0);
+        ctx.translate(xTrans * (thisCurve - thisScale) + thisCurve * (1 - thisScale) * i, 0);
 
         ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
     }
@@ -174,10 +216,10 @@ function render() {
 
     // // reset road vars
     // if (pu > 2.686) { // 6.859
-    if (pu >= INITIAL_PU * MAGIC_SCALE_NUM * 2) {
-        pu = INITIAL_PU;
-        roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
-    }
+    // if (pu >= INITIAL_PU * MAGIC_SCALE_NUM * 2) {
+    //     pu = INITIAL_PU;
+    //     roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
+    // }
 
     // Reset current transformation matrix to the identity matrix after drawing road
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -226,16 +268,29 @@ function update() {
 
     // turning
     if (keysDown["ArrowLeft"]) {
-        xTrans += turnSpeed * speed/35;
-        // yTrans += turnSpeed;
+        // xTrans -= turnSpeed * speed/35;
+        xTrans -= turnSpeed;
     } else if (keysDown["ArrowRight"]) {
-        xTrans -= turnSpeed * speed/35;
-        // yTrans -= accel;
+        // xTrans += turnSpeed * speed/35;
+        xTrans += turnSpeed;
     }
 
     // update road position
     pu += 0.001 * speed * 5;
     roadHeightOffset += 0.1 * speed/2.9 * 5;
+
+    // update car postion
+    carPos += speed * deltaTimeSecs / 60 / 60;  // kmh * h
+
+    if (carPos > map[currentMapSectionIndex]["to"]) {
+        currentMapSectionIndex++;
+        currentMapSectionIndex = currentMapSectionIndex % map.length;
+
+        // completed a lap
+        if (currentMapSectionIndex == 0) {
+            carPos = 0;
+        }
+    }
 }
 
 function gameLoop() {
@@ -244,8 +299,6 @@ function gameLoop() {
     render();
 }
 setInterval(gameLoop, 10);
-
-
 
 window.addEventListener("keydown", function(e) {
     keysDown[e.key] = true;

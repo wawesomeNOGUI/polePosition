@@ -121,8 +121,6 @@ function timing() {
         secs++;
         playTime--;
     }
-    pu += 0.001 * speed * 5;
-    roadHeightOffset += 0.1 * speed/2.9 * 5;
 }
 
 function render() {
@@ -138,6 +136,7 @@ function render() {
     ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
     ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
 
+    var thisCurve = playTime / 5;
 
     for (var i = 0; i < 200; i++) {
         var roadSection = roadSectionDrawCircularBuffer[i % roadSectionDrawCircularBuffer.length];
@@ -149,9 +148,9 @@ function render() {
             heightOffset -= roadSection.height * (pu / (MAGIC_SCALE_NUM ** j));
         }
 
-        // translate road based on key presses (or based on track map?? key presses from player will undo translate to keep car in center of track)
+        // translate road based on key presses and track map, (key presses from player will counteract map translate to keep car in center of track)
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.translate(xTrans * thisScale, yTrans * thisScale);
+        ctx.translate(xTrans * thisScale + thisCurve * (1 - thisScale) * i, 0);
 
         ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
     }
@@ -234,6 +233,9 @@ function update() {
         // yTrans -= accel;
     }
 
+    // update road position
+    pu += 0.001 * speed * 5;
+    roadHeightOffset += 0.1 * speed/2.9 * 5;
 }
 
 function gameLoop() {

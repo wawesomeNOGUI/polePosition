@@ -126,13 +126,13 @@ var currentMapSectionIndex = 0;
 var map = [
     {
         "curvature" : 0,
-        "scanlines" : 180,
+        "scanlines" : 150,
         "from"      : 0,
         "to"        : 0.1,
     },
     {
         "curvature" : 0.5,
-        "scanlines" : 180,
+        "scanlines" : 150,
         "from"      : 0.1,
         "to"        : 0.2,
     },
@@ -191,7 +191,7 @@ function render() {
 
         // translate road based on key presses and track map, (key presses from player will counteract map translate to keep car in center of track)
         ctx.setTransform(1, 0, 0, 1, 0, 0);
-        ctx.translate(xTrans * (thisCurve - thisScale) + thisCurve * (1 - thisScale) * (i % 180), 0);
+        ctx.translate(xTrans * (thisCurve - thisScale) + thisCurve * (1 - thisScale) * (i % 150), 0);
 
         ctx.drawImage(roadSection, widthOffset, heightOffset, roadSection.width * thisScale, roadSection.height * thisScale);
     }
@@ -276,7 +276,7 @@ function update() {
 
     // update road position
     pu += 0.001 * speed * 5;
-    roadHeightOffset += 0.1 * speed/2.9 * 5;
+    roadHeightOffset += 0.0995 * speed/2.9 * 5;
 
     // update car postion
     carPos += speed * deltaTimeSecs / 60 / 60;  // kmh * h

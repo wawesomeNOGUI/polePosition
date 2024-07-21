@@ -136,6 +136,12 @@ var map = [
         "from"      : 0.1,
         "to"        : 0.2,
     },
+    {
+        "curvature" : 0.5,
+        "scanlines" : 150,
+        "from"      : 0.1,
+        "to"        : 0.2,
+    },
 ]
 
 //======================================================
@@ -169,7 +175,7 @@ function render() {
 
     // var
     var tmpMapIndex = currentMapSectionIndex;
-    for (var i = 0; i < 500; i++) {
+    for (var i = 0; i < 500; i++) { // draw 500 scanlines
         if (tmpMapIndex == currentMapSectionIndex) {
             if (i > map[tmpMapIndex].scanlines) {
                 tmpMapIndex++;
@@ -179,6 +185,12 @@ function render() {
         }
 
         var thisCurve = map[tmpMapIndex]["curvature"];
+
+        // gradually set curvature to straight
+        // if (i % map[tmpMapIndex].scanlines > map[tmpMapIndex].scanlines - map[tmpMapIndex].scanlines / 5) {
+           thisCurve -= thisCurve / (map[tmpMapIndex].scanlines) * (i % Math.floor(map[tmpMapIndex].scanlines));
+        //    console.log(thisCurve)
+        // }
         
         var roadSection = roadSectionDrawCircularBuffer[i % roadSectionDrawCircularBuffer.length];
 
@@ -305,6 +317,7 @@ function gameLoop() {
     render();
 }
 setInterval(gameLoop, 10);
+gameLoop();
 
 window.addEventListener("keydown", function(e) {
     keysDown[e.key] = true;

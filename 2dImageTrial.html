@@ -97,7 +97,7 @@ function drawImage(ctx, image, x, y, scale, rotate){
     ctx.drawImage(image, -canvas.width/2, -canvas.height/2);
     ctx.setTransform(1, 0, 0, 1, 0, 0); // restore the transformation to default.
 }
-var sy = 200;
+var sy = 355;
 function render() {
     // default background
     ctx.fillStyle = "black";
@@ -116,14 +116,14 @@ function render() {
     // drawImage(ctx, trackImage, 100, -50, 0.5, 1.4);
     for (var i = 0; i < trackImage.height; i++) {
         var scale = i * 1/trackImage.height;
-        ctx.setTransform(scale * 5, 0, 0, 0.5, canvas.width/2 - scale * canvas.width/2 - 100, sy/5);
-        ctx.drawImage(trackImage, 0, i + sy, trackImage.width, 1, 0, i, trackImage.width, 1);
+        ctx.setTransform(scale * 5, 0, 0, 0.5, canvas.width/2 - scale * canvas.width * 2 - 10, -250 + sy);
+        ctx.drawImage(trackImage, 0, i, trackImage.width, 1, 0, i, trackImage.width, 1);
         // ctx.drawImage(trackImage, 0, i, trackImage.width, 1, 0, i, trackImage.width, 1);
         // Reset current transformation matrix to the identity matrix after drawing road
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
-    sy++;
-    sy %= trackImage.height;
+    // sy += 0.05;
+    // sy %= trackImage.height;
 
     // car
     ctx.drawImage(carSprite, canvas.width/2 - carSprite.width/2 - 2, canvas.height - carSprite.height - 12);

@@ -116,13 +116,13 @@ function render() {
     // drawImage(ctx, trackImage, 100, -50, 0.5, 1.4);
     for (var i = 0; i < trackImage.height; i++) {
         var scale = i * 1/trackImage.height;
-        ctx.setTransform(scale * 5, 0, 0, 0.5, canvas.width/2 - scale * canvas.width * 2 - 10, -250 + sy);
+        ctx.setTransform(scale * 25, 0, 0, 0.5, canvas.width/2 - scale * canvas.width * 4 - xTrans * 5 * scale, -250 + sy);
         ctx.drawImage(trackImage, 0, i, trackImage.width, 1, 0, i, trackImage.width, 1);
         // ctx.drawImage(trackImage, 0, i, trackImage.width, 1, 0, i, trackImage.width, 1);
         // Reset current transformation matrix to the identity matrix after drawing road
         ctx.setTransform(1, 0, 0, 1, 0, 0);
     }
-    // sy += 0.05;
+    sy += speed * 0.05;
     // sy %= trackImage.height;
 
     // car

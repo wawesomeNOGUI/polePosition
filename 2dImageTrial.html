@@ -1,0 +1,210 @@
+<html>
+<body style="margin: 0; padding: 0; overflow: hidden; background-color: black;">
+    <style>
+        #gameCanvas {
+            margin: 0;
+            padding: 0;
+
+            /*border-style: solid;*/
+            /*border-color: #A4FCD4;*/
+            /*border-width: 20px;*/
+
+            font-smooth: never;
+            -webkit-font-smoothing : none;
+
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+    </style>
+<canvas id="gameCanvas"></canvas>
+
+<script src="./atariPixelFont.js"></script>
+<script>
+var canvas = document.getElementById("gameCanvas");
+var ctx = canvas.getContext("2d");
+canvas.width = 256;  //Pole Position Resolution
+canvas.height = 224;
+canvas.style.width = ""+ window.innerWidth +"px";   // stretch canvas to fit screen
+canvas.style.height = ""+ window.innerHeight +"px"; // ***TODO: maybe stretch canvas to always have correct ratio as game instead of fullscreen
+ctx.imageSmoothingEnabled = false;
+
+//=================Sprites==============================
+var background = new Image();
+    background.src = "sprites/Pole0000.png";
+
+var carSprite = new Image();
+    carSprite.src = "sprites/car.png";
+
+var trackImage = new Image();
+    trackImage.src = "sprites/track.jpg";
+//======================================================
+
+//======================Vars============================
+var topScore = 1600;
+var score = 0;
+var playTime = 60;
+
+// car vars
+const MAX_SPEED = 195;
+var speed = 0;
+var turnSpeed = 2;
+var accel = 0.3;
+var deaccel = 0.5;
+var xVelocity = 0;
+var keysDown = {};
+var carPos = 0;
+
+// lap time
+var centisecs = 0;
+var secs = 0;
+
+// road drawing variables
+const NUM_ROAD_SECTIONS = 1; // 11;
+const MAGIC_SCALE_NUM = 1.03; //1.74;
+const SCANLINE_TO_KM_RATIO = 180 / 0.1;
+// const INITIAL_PU = 1.55;
+const INITIAL_PU = 2.697;
+const INITIAL_ROAD_HEIGHT_OFFSET = 0; // 62;
+var pu = INITIAL_PU;
+var roadHeightOffset = INITIAL_ROAD_HEIGHT_OFFSET;
+var xTrans = 0;
+var yTrans = 0;
+
+
+//======================================================
+var lastTimeSecs = Date.now() / 1000;
+var deltaTimeSecs = 0;
+function timing() {
+    centisecs++;
+
+    if (centisecs == 99) {
+        centisecs = 0;
+        secs++;
+        playTime--;
+    }
+
+    deltaTimeSecs = Date.now() / 1000 - lastTimeSecs;
+    lastTimeSecs = Date.now() / 1000;
+}
+
+// https://stackoverflow.com/questions/34566518/draw-css-transformation-scale-rotate-left-right-on-canvas
+function drawImage(ctx, image, x, y, scale, rotate){
+    ctx.setTransform(scale, 0, 0, scale, x, y);  // resets transform and 
+                                                 // set scale and position
+    ctx.rotate(rotate);  // apply the rotation to the above transformation
+    // ctx.drawImage(image, -centerX, -centerY);  // draw the image offset to its center
+    // ctx.drawImage(image, -image.width/2, -image.height/2);
+    ctx.drawImage(image, -canvas.width/2, -canvas.height/2);
+    ctx.setTransform(1, 0, 0, 1, 0, 0); // restore the transformation to default.
+}
+var sy = 200;
+function render() {
+    // default background
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // ctx.drawImage(background, 0, 0);
+
+    // markers for dev
+    ctx.fillStyle = "#FF0000";
+    ctx.fillRect(0, canvas.height - 51, 50, 1);
+    ctx.fillRect(canvas.width / 2 - 25, canvas.height - 118, 50, 1);
+    ctx.fillRect(canvas.width/2 - 1, canvas.height - canvas.height/2.5, 2, 1);
+
+    // road
+    // trackImage.style.roawdadwtate = "120deg";
+    // drawImage(ctx, trackImage, 100, -50, 0.5, 1.4);
+    for (var i = 0; i < trackImage.height; i++) {
+        var scale = i * 1/trackImage.height;
+        ctx.setTransform(scale * 5, 0, 0, 0.5, canvas.width/2 - scale * canvas.width/2 - 100, sy/5);
+        ctx.drawImage(trackImage, 0, i + sy, trackImage.width, 1, 0, i, trackImage.width, 1);
+        // ctx.drawImage(trackImage, 0, i, trackImage.width, 1, 0, i, trackImage.width, 1);
+        // Reset current transformation matrix to the identity matrix after drawing road
+        ctx.setTransform(1, 0, 0, 1, 0, 0);
+    }
+    sy++;
+    sy %= trackImage.height;
+
+    // car
+    ctx.drawImage(carSprite, canvas.width/2 - carSprite.width/2 - 2, canvas.height - carSprite.height - 12);
+
+    // Screen Text
+    // gear
+    drawColorText(ctx, "LO", "#FFFFFF", canvas.width - 16, canvas.height - 8);
+
+    // score
+    drawColorText(ctx, "TOP", "#ff8fae", 24, 8);
+    drawColorText(ctx, "" + topScore, "#ff8fae", 56, 8);
+    drawColorText(ctx, "SCORE", "#ffffff", 8, 24);
+    drawColorText(ctx, "" + score, "#ffffff", 56, 24);
+
+    // play time left
+    drawColorText(ctx, "TIME", "#ffff70", 112, 8);
+    drawColorText(ctx, "" + playTime, "#ffff70", 120, 24);
+
+    // lap time
+    drawColorText(ctx, "LAP", "#8fff70", 176, 8);
+    drawColorText(ctx, "" + secs + "*" + centisecs, "#8fff70", 208, 8);
+
+    // speed
+    drawColorText(ctx, "SPEED", "#ffffff", 160, 24);
+    drawColorText(ctx, "" + Math.round(speed) + "kmh", "#ffffff", 208, 24);
+}
+
+function update() {
+    if (speed >= MAX_SPEED) {
+        speed = MAX_SPEED;
+    }
+
+    // gas
+    if (keysDown["ArrowUp"]) {
+        speed += accel;
+    } else {
+        speed -= deaccel;
+
+        if (speed < 0) {
+            speed = 0;
+        }
+    }
+
+    // turning
+    if (keysDown["ArrowLeft"]) {
+        // xTrans -= turnSpeed * speed/35;
+        xTrans -= turnSpeed;
+    } else if (keysDown["ArrowRight"]) {
+        // xTrans += turnSpeed * speed/35;
+        xTrans += turnSpeed;
+    }
+}
+
+function gameLoop() {
+    timing();
+    update();
+    render();
+}
+setInterval(gameLoop, 10);
+gameLoop();
+
+window.addEventListener("keydown", function(e) {
+    keysDown[e.key] = true;
+
+    // if (e.key == "ArrowUp") {
+    //     xTrans--;
+    // }
+});
+
+window.addEventListener("keyup", function(e) {
+    delete keysDown[e.key];
+});
+
+window.addEventListener("resize", function(e) {
+    canvas.style.width = ""+ window.innerWidth +"px";
+    canvas.style.height = ""+ window.innerHeight +"px";
+});
+
+window.addEventListener("contextmenu", function(e) {
+    e.preventDefault();   //stops right click bringing up a menu
+});
+</script>
+</body>
+</html>
